@@ -1,16 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
-
-def show_dataset(dataloader):
-    features, labels = next(iter(dataloader))
-
-    for i in range (0,10):
-        img = features[i].squeeze().permute(1,2,0)
-        label = labels[i]
-        plt.imshow(img)
-        plt.show()
-        print(f'Label: {label}')
-        print("hola")
+from torch.utils.data import Dataset
 
 
 # Calculate accuracy (a classification metric)
@@ -163,3 +153,20 @@ def set_seeds(seed: int=42):
     torch.manual_seed(seed)
     # Set the seed for CUDA torch operations (ones that happen on the GPU)
     torch.cuda.manual_seed(seed)
+
+
+def show_grid_preview(dataset: Dataset):
+
+    class_names = dataset.classes
+    # Plot more images
+    torch.manual_seed(42)
+    fig = plt.figure(figsize=(9, 9))
+    rows, cols = 4, 4
+    for i in range(1, rows * cols + 1):
+        random_idx = torch.randint(0, len(dataset), size=[1]).item()
+        img, label = dataset[random_idx]
+        img = img.permute(1,2,0)
+        fig.add_subplot(rows, cols, i)
+        plt.imshow(img.squeeze(), cmap="gray")
+        plt.title(class_names[label])
+        plt.axis(False);
