@@ -1,4 +1,3 @@
-import torch
 import torchvision.transforms as transforms
 import torchvision
 from torch.utils.data import DataLoader
