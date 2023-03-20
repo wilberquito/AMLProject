@@ -1,0 +1,15 @@
+name: aml-project
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - matplotlib
+  - tqdm
+  - pathlib
+  - pip
+  - pip:
+    - pandas
+    - numpy
+    - torch
+    - torchvision

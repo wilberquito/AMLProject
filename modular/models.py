@@ -20,6 +20,9 @@ class AMLResnet50(nn.Module):
         # Definition of multiple dropout
         self.dropouts = nn.ModuleList([nn.Dropout(0.5) for _ in range(5)])
 
+        # Freeze layers
+        self.freeze()
+
     def freeze(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
