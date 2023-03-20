@@ -1,6 +1,13 @@
 from torchvision.models import resnet50, ResNet50_Weights
 import torch.nn as nn
 
+def get_img_size(model_id: str):
+
+    models = {
+        'amlresnet50': 232
+    }
+    
+    return models[model_id]
 
 class AMLResnet50(nn.Module):
 
