@@ -1,9 +1,8 @@
 from torchvision.models import resnet50, ResNet50_Weights
-import torch
 import torch.nn as nn
 
 
-class AMLResnet50(torch.Module):
+class AMLResnet50(nn.Module):
 
     def __init__(self, out_dim:int):
         # New weights with accuracy 80.858%
