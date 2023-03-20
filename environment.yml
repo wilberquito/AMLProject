@@ -7,9 +7,11 @@ dependencies:
   - matplotlib
   - tqdm
   - pathlib
+  - torchinfo
   - pip
   - pip:
     - pandas
     - numpy
     - torch
     - torchvision
+
