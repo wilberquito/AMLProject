@@ -48,8 +48,6 @@ def train_step(model: torch.nn.Module,
         y_pred = model(X)
 
         y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
-        print('train_step', y_pred.shape, y.shape, y_pred_class)
-        print('train_step', y_pred[:5], y[:5], y_pred_class[:5])
 
         # 2. Calculate  and accumulate loss
         loss = loss_fn(y_pred, y)
