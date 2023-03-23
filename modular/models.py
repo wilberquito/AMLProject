@@ -26,8 +26,7 @@ class AMLResnet50(nn.Module):
         # Freeze layers
         self.freeze()
 
-        # Default transformations
-        self.transform = transforms.Compose([
+        self.transforms = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
