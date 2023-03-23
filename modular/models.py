@@ -70,10 +70,10 @@ class AMLResnet50_V2(nn.Module):
         in_dim = self.net.fc.in_features
 
         #intermediate dimensions
-        range = in_dim - out_dim 
-        dim_75 = int(in_dim + (range * 0.75))
-        dim_50 = int(in_dim + (range * 0.5))
-        dim_25 = int(in_dim + (range * 0.25))
+        dim_range = in_dim - out_dim 
+        dim_75 = int(out_dim + (dim_range * 0.75))
+        dim_50 = int(out_dim + (dim_range * 0.5))
+        dim_25 = int(out_dim + (dim_range * 0.25))
 
         # Disable efficient net b7 classifier
         self.net.fc = nn.Identity()

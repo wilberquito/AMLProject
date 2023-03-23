@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 from tqdm.auto import tqdm
-from utils import save_model
+from .utils import save_model
 
 
 def train_step(model: torch.nn.Module,
