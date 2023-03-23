@@ -1,13 +1,6 @@
 from torchvision.models import resnet50, ResNet50_Weights
+import torchvision.transforms as transforms
 import torch.nn as nn
-
-def get_img_size(model_id: str):
-
-    models = {
-        'amlresnet50': 232
-    }
-    
-    return models[model_id]
 
 class AMLResnet50(nn.Module):
 
@@ -32,6 +25,16 @@ class AMLResnet50(nn.Module):
 
         # Freeze layers
         self.freeze()
+
+        # Default transformations
+        self.transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225])
+        ])
 
     def freeze(self):
         # Don't compute the gradients for net feature
