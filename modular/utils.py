@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset
+from pathlib import Path
 
 
 # Calculate accuracy (a classification metric)
@@ -170,3 +171,9 @@ def show_grid_preview(dataset: Dataset):
         plt.imshow(img.squeeze(), cmap="gray")
         plt.title(class_names[label])
         plt.axis(False);
+
+
+def save_model(data_dict: dict, save_as: Path):
+    # Make parent dir if not exist
+    save_as.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(data_dict, save_as)

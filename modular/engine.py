@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 from tqdm.auto import tqdm
+from utils import save_model
 
 
 def train_step(model: torch.nn.Module,
@@ -123,7 +124,6 @@ def test_step(model: torch.nn.Module,
 
 # TODO: list of todo
 # - implement early stop here
-# - implement save points each time the model improve in the validaton set
 def train(model: torch.nn.Module,
           train_dataloader: torch.utils.data.DataLoader,
           test_dataloader: torch.utils.data.DataLoader,
@@ -163,6 +163,7 @@ def train(model: torch.nn.Module,
               test_loss: [1.2641, 1.5706],
               test_acc: [0.3400, 0.2973]}
     """
+
     # Create empty results dictionary
     results = {"train_loss": [],
                "train_acc": [],
@@ -173,6 +174,7 @@ def train(model: torch.nn.Module,
     # Make sure model on target device
     model.to(device)
 
+    # Init min loss reference
     valid_loss_min = np.Inf
 
     # Loop through training and testing steps for a number of epochs
@@ -215,8 +217,7 @@ def train(model: torch.nn.Module,
             'optimizer': optimizer.state_dict(),
             'model': model.state_dict()
           }
-          torch.save(data_dict, save_as)
-
+          save_model(data_dict, save_as)
 
     # Return the filled results at the end of the epochs
     return results
