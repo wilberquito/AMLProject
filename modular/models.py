@@ -131,6 +131,7 @@ class AdaptiveConcatPool2d(nn.Module):
         self.ap = nn.AdaptiveAvgPool2d(sz)
         self.mp = nn.AdaptiveMaxPool2d(sz)
     def forward(self, x): 
+        print(x.shape)
         return torch.cat([self.mp(x), self.ap(x)], 1)
 
 class AMLResnet50_fastAI(nn.Module):
@@ -149,14 +150,15 @@ class AMLResnet50_fastAI(nn.Module):
         self.net.fc = nn.Identity()
 
         self.fc = nn.Sequential(
-            AdaptiveConcatPool2d((32, 4096)),
-            nn.Flatten(),
-            nn.BatchNorm1d(60000),
+            #AdaptiveConcatPool2d((32, 4096)),
+            #nn.Flatten(),
+            nn.BatchNorm1d(2048),
             nn.Dropout(0.5),
+            nn.Linear(2048,512),
             nn.ReLU(),
-            nn.BatchNorm1d(60000),
+            nn.BatchNorm1d(512),
             nn.Dropout(0.5),
-            nn.Linear(60000,out_dim),
+            nn.Linear(512,10),
         )
 
         # Disable efficient net b7 classifier
@@ -188,7 +190,11 @@ class AMLResnet50_fastAI(nn.Module):
 
     def forward(self, x):
 
-        x = self.net(x).squeeze(-1).squeeze(-1)
+        print(x.shape)
+
+        x = self.net(x)
+
+        print(x.shape)
 
         x = self.fc(x)
 
