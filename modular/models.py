@@ -15,17 +15,18 @@ class AMLResnet50(nn.Module):
         # Take the input of the fully connected layer of effnet
         in_dim = self.net.fc.in_features
 
-        # Disable efficient net b7 classifier
+        # Noop operation
         self.net.fc = nn.Identity()
 
-        # Declare the fully connected layer
-        self.fc = nn.Linear(in_dim, out_dim)
-
-        # Definition of multiple dropout
-        self.dropouts = nn.ModuleList([nn.Dropout(0.5) for _ in range(5)])
-
         # Freeze layers
-        self.freeze()
+        self.__freeze_layers()
+
+        # Declare the fully connected layer
+        self.fc = nn.Sequential(
+            nn.Linear(in_dim, 128),
+            nn.ReLU(),
+            nn.Linear(128, out_dim))
+
 
         self.transforms = transforms.Compose([
             transforms.Resize(256),
@@ -36,27 +37,16 @@ class AMLResnet50(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
-    def freeze(self):
+    def __freeze_layers(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
 
 
     def forward(self, x):
-        # Apply multiple dropouts
-
-        x = self.net(x).squeeze(-1).squeeze(-1)
-
-        for i, dropout in enumerate(self.dropouts):
-            if i == 0:
-                out = self.fc(dropout(x))
-            else:
-                out += self.fc(dropout(x))
-
-        # Compute the average of dropouts
-        out /= len(self.dropouts)
-
-        return out
+        x = self.net(x)
+        x = self.fc(x)
+        return x
 
 class AMLResnet50_V2(nn.Module):
 
@@ -71,7 +61,7 @@ class AMLResnet50_V2(nn.Module):
         in_dim = self.net.fc.in_features
 
         #intermediate dimensions
-        dim_range = in_dim - out_dim 
+        dim_range = in_dim - out_dim
         dim_75 = int(out_dim + (dim_range * 0.75))
         dim_50 = int(out_dim + (dim_range * 0.5))
         dim_25 = int(out_dim + (dim_range * 0.25))
@@ -130,7 +120,7 @@ class AdaptiveConcatPool2d(nn.Module):
         sz = sz or (1,1)
         self.ap = nn.AdaptiveAvgPool2d(sz)
         self.mp = nn.AdaptiveMaxPool2d(sz)
-    def forward(self, x): 
+    def forward(self, x):
         return torch.cat([self.mp(x), self.ap(x)], 1)
 
 class AMLResnet50_fastAI(nn.Module):
@@ -194,4 +184,3 @@ class AMLResnet50_fastAI(nn.Module):
         x = self.fc(x)
 
         return x
-    

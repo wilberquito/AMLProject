@@ -12,7 +12,7 @@ from .utils import save_model
 
 def train_step(model: torch.nn.Module,
                dataloader: torch.utils.data.DataLoader,
-               loss_fn: torch.nn.Module,
+               criterion: torch.nn.Module,
                optimizer: torch.optim.Optimizer,
                device: torch.device) -> Tuple[float, float]:
     """Trains a PyTorch model for a single epoch.
@@ -41,18 +41,16 @@ def train_step(model: torch.nn.Module,
     train_loss, train_acc = 0, 0
 
     # Loop through data loader data batches
-    for batch, (X, y) in tqdm(enumerate(dataloader)):
-        # Send data to target device
-        X, y = X.to(device), y.to(device)
+    for batch, (inputs, labels) in tqdm(enumerate(dataloader)):
+        # 0. Send data to target device
+        inputs, labels = inputs.to(device), labels.to(device)
 
         # 1. Forward pass
-        y_pred = model(X)
-
-        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
+        outputs = model(inputs)
 
         # 2. Calculate  and accumulate loss
-        loss = loss_fn(y_pred, y)
-        train_loss += loss.item()
+        loss = criterion(outputs, labels)
+        train_loss += loss.item() * inputs.size(0)
 
         # 3. Optimizer zero grad
         optimizer.zero_grad()
@@ -63,18 +61,17 @@ def train_step(model: torch.nn.Module,
         # 5. Optimizer step
         optimizer.step()
 
-        # Calculate and accumulate accuracy metric across all batches
-        y_pred_class = torch.argmax(torch.softmax(y_pred, dim=1), dim=1)
-        train_acc += (y_pred_class == y).sum().item()#/len(y_pred)
+        # 6. Calculate and accumulate accuracy metric across all batches
+        preds = torch.argmax(outputs, dim=1)
+        train_acc += torch.sum(preds == labels).item()
 
-    # Adjust metrics to get average loss and accuracy per batch
-    train_loss = train_loss / len(dataloader)
-    train_acc = train_acc / len(dataloader)
+    train_loss = train_loss / len(dataloader.dataset)
+    train_acc = train_acc / len(dataloader.dataset)
     return train_loss, train_acc
 
 def test_step(model: torch.nn.Module,
               dataloader: torch.utils.data.DataLoader,
-              loss_fn: torch.nn.Module,
+              criterion: torch.nn.Module,
               device: torch.device) -> Tuple[float, float]:
     """Tests a PyTorch model for a single epoch.
 
@@ -102,24 +99,24 @@ def test_step(model: torch.nn.Module,
     # Turn on inference context manager
     with torch.inference_mode():
         # Loop through DataLoader batches
-        for batch, (X, y) in tqdm(enumerate(dataloader)):
-            # Send data to target device
-            X, y = X.to(device), y.to(device)
+        for batch, (inputs, labels) in tqdm(enumerate(dataloader)):
+            # 0. Send data to target device
+            inputs, labels = inputs.to(device), labels.to(device)
 
             # 1. Forward pass
-            test_pred_logits = model(X)
+            outputs = model(inputs)
 
             # 2. Calculate and accumulate loss
-            loss = loss_fn(test_pred_logits, y)
-            test_loss += loss.item()
+            loss = criterion(outputs, labels)
+            test_loss += loss.item() * inputs.size(0)
 
-            # Calculate and accumulate accuracy
-            test_pred_labels = test_pred_logits.argmax(dim=1)
-            test_acc += (test_pred_labels == y).sum().item()#/len(test_pred_labels)
+            # 3. Calculate and accumulate accuracy metric across all batches
+            preds = outputs.argmax(dim=1)
+            test_acc += torch.sum(preds == labels).item()
 
-    # Adjust metrics to get average loss and accuracy per batch
-    test_loss = test_loss / len(dataloader)
-    test_acc = test_acc / len(dataloader)
+    test_loss = test_loss / len(dataloader.dataset)
+    test_acc = test_acc / len(dataloader.dataset)
+
     return test_loss, test_acc
 
 # TODO: list of todo
@@ -128,7 +125,7 @@ def train(model: torch.nn.Module,
           train_dataloader: torch.utils.data.DataLoader,
           test_dataloader: torch.utils.data.DataLoader,
           optimizer: torch.optim.Optimizer,
-          loss_fn: torch.nn.Module,
+          criterion: torch.nn.Module,
           epochs: int,
           device: torch.device,
           save_as: Path) -> Dict[str, List]:
@@ -181,13 +178,13 @@ def train(model: torch.nn.Module,
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = train_step(model=model,
                                           dataloader=train_dataloader,
-                                          loss_fn=loss_fn,
+                                          criterion=criterion,
                                           optimizer=optimizer,
                                           device=device)
 
         test_loss, test_acc = test_step(model=model,
                                         dataloader=test_dataloader,
-                                        loss_fn=loss_fn,
+                                        criterion=criterion,
                                         device=device)
 
         # Print out what's happening
