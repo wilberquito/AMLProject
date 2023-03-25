@@ -131,7 +131,6 @@ class AdaptiveConcatPool2d(nn.Module):
         self.ap = nn.AdaptiveAvgPool2d(sz)
         self.mp = nn.AdaptiveMaxPool2d(sz)
     def forward(self, x): 
-        print(x.shape)
         return torch.cat([self.mp(x), self.ap(x)], 1)
 
 class AMLResnet50_fastAI(nn.Module):
@@ -190,11 +189,7 @@ class AMLResnet50_fastAI(nn.Module):
 
     def forward(self, x):
 
-        print(x.shape)
-
         x = self.net(x)
-
-        print(x.shape)
 
         x = self.fc(x)
 
