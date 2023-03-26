@@ -119,8 +119,7 @@ def test_step(model: torch.nn.Module,
 
     return test_loss, test_acc
 
-# TODO: list of todo
-# - implement early stop here
+
 def train(model: torch.nn.Module,
           train_dataloader: torch.utils.data.DataLoader,
           test_dataloader: torch.utils.data.DataLoader,
@@ -128,6 +127,7 @@ def train(model: torch.nn.Module,
           criterion: torch.nn.Module,
           epochs: int,
           device: torch.device,
+          patience: int = 5,
           save_as: Optional[Path] = None) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -174,6 +174,9 @@ def train(model: torch.nn.Module,
     # Init loss
     valid_loss_min = np.Inf
 
+    # Init early stop
+    early_stop_count = 0
+
     # Is save checkpoint required?
     is_save_required = save_as is not None
 
@@ -208,19 +211,27 @@ def train(model: torch.nn.Module,
         # Compute if network learned comparing the test loss
         network_learned = test_loss < valid_loss_min
 
-        # Save network checkpoint
-        if network_learned and is_save_required:
-          valid_loss_min = test_loss
-          data_dict = {
-            'train_loss': results["train_loss"],
-            'train_acc': results["train_acc"],
-            'test_loss': results["test_loss"],
-            'test_acc': results["test_acc"],
-            'epoch': epoch,
-            'optimizer': optimizer.state_dict(),
-            'model': model.state_dict()
-          }
-          save_model(data_dict, cast(Path, save_as))
+        if network_learned:
+            valid_loss_min = test_loss
+            early_stop_count = 0
+
+            # Save network checkpoint
+            if is_save_required:
+              data_dict = {
+                'train_loss': results["train_loss"],
+                'train_acc': results["train_acc"],
+                'test_loss': results["test_loss"],
+                'test_acc': results["test_acc"],
+                'epoch': epoch,
+                'optimizer': optimizer.state_dict(),
+                'model': model.state_dict()
+              }
+              save_model(data_dict, cast(Path, save_as))
+        else:
+            early_stop_count += 1
+            if early_stop_count >= patience:
+                print(f'Early stopping after {epoch} epochs')
+                break
 
     # Returns train history
     return results
