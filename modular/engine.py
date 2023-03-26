@@ -128,6 +128,7 @@ def train(model: torch.nn.Module,
           epochs: int,
           device: torch.device,
           patience: int = 5,
+          scheduler = None,
           save_as: Optional[Path] = None) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -183,15 +184,19 @@ def train(model: torch.nn.Module,
     # Loop through training and testing steps for a number of epochs
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = train_step(model=model,
-                                          dataloader=train_dataloader,
-                                          criterion=criterion,
-                                          optimizer=optimizer,
-                                          device=device)
+                                           dataloader=train_dataloader,
+                                           criterion=criterion,
+                                           optimizer=optimizer,
+                                           device=device)
 
         test_loss, test_acc = test_step(model=model,
                                         dataloader=test_dataloader,
                                         criterion=criterion,
                                         device=device)
+
+        # Step the learning rate scheduler
+        if scheduler:
+            scheduler.step()
 
         # Print out what's happening
         print(
