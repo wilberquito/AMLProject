@@ -2,7 +2,7 @@
 Contains functions for training and testing a PyTorch model.
 """
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, cast
 
 import numpy as np
 import torch
@@ -128,7 +128,7 @@ def train(model: torch.nn.Module,
           criterion: torch.nn.Module,
           epochs: int,
           device: torch.device,
-          save_as: Path) -> Dict[str, List]:
+          save_as: Optional[Path] = None) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
     Passes a target PyTorch models through train_step() and test_step()
@@ -168,11 +168,14 @@ def train(model: torch.nn.Module,
                "test_acc": []
     }
 
-    # Make sure model on target device
+    # Makes sure model on target device
     model.to(device)
 
-    # Init min loss reference
+    # Init loss
     valid_loss_min = np.Inf
+
+    # Is save checkpoint required?
+    is_save_required = save_as is not None
 
     # Loop through training and testing steps for a number of epochs
     for epoch in tqdm(range(epochs)):
@@ -202,8 +205,11 @@ def train(model: torch.nn.Module,
         results["test_loss"].append(test_loss)
         results["test_acc"].append(test_acc)
 
+        # Compute if network learned comparing the test loss
         network_learned = test_loss < valid_loss_min
-        if network_learned:
+
+        # Save network checkpoint
+        if network_learned and is_save_required:
           valid_loss_min = test_loss
           data_dict = {
             'train_loss': results["train_loss"],
@@ -214,7 +220,7 @@ def train(model: torch.nn.Module,
             'optimizer': optimizer.state_dict(),
             'model': model.state_dict()
           }
-          save_model(data_dict, save_as)
+          save_model(data_dict, cast(Path, save_as))
 
-    # Return the filled results at the end of the epochs
+    # Returns train history
     return results
