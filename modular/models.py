@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 import torch as torch
 import torch.nn as nn
 
-class AMLResnet50(nn.Module):
+class AMLResnet50_V0(nn.Module):
 
     def __init__(self, out_dim:int):
 
@@ -49,7 +49,7 @@ class AMLResnet50(nn.Module):
         return x
 
 
-class AMLResnet50_V2(nn.Module):
+class AMLResnet50_V1(nn.Module):
     """This AMLRestnet50 emulates fastai architecture"""
 
     def __init__(self, out_dim:int):
