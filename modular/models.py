@@ -77,7 +77,7 @@ class AMLResnet50_V1(nn.Module):
         )
 
         # Freeze layers
-        self.__freeze_default_model_layers()
+        self.freeze_base()
 
         self.transforms = transforms.Compose([
             transforms.Resize(232),
