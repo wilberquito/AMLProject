@@ -1,4 +1,4 @@
-from torchvision.models import resnet50, ResNet50_Weights
+from torchvision.models import resnet50, ResNet50_Weights, resnet101, ResNet101_Weights
 import torchvision.transforms as transforms
 import torch as torch
 import torch.nn as nn
@@ -37,7 +37,7 @@ class AMLResnet50_V0(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
-    def __freeze_layers(self):
+    def _freeze_layers(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
@@ -179,4 +179,59 @@ class AMLResnet50_fastAI(nn.Module):
         #print('forward', x.shape)
         x = self.net(x)
         #print('forward', x.shape)
+        return x
+
+class AMLResnet101_V0(nn.Module):
+
+    def __init__(self, out_dim:int):
+
+        super().__init__()
+
+        self.net = resnet101(weights=ResNet101_Weights.IMAGENET1K_V2)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.fc.in_features
+
+        # Noop operation
+        self.net.fc = nn.Identity()
+
+        # Freeze layers
+        self.freeze_base()
+
+        # Disable efficient net b7 classifier
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.BatchNorm1d(in_dim),
+            nn.Dropout(0.5),
+            nn.Linear(in_dim,512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(0.5),
+            nn.Linear(512,out_dim),
+        )
+
+        self.transforms = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225])
+        ])
+
+    def freeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = False
+
+
+    def unfreeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
+
+
+    def forward(self, x):
+        x = self.net(x)
+        x = self.fc(x)
         return x
