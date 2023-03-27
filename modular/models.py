@@ -29,7 +29,7 @@ class AMLResnet50_V0(nn.Module):
 
 
         self.transforms = transforms.Compose([
-            transforms.Resize(256),
+            transforms.Resize(232),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(
@@ -77,10 +77,10 @@ class AMLResnet50_V1(nn.Module):
         )
 
         # Freeze layers
-        self.__freeze_layers()
+        self.__freeze_default_model_layers()
 
         self.transforms = transforms.Compose([
-            transforms.Resize(256),
+            transforms.Resize(232),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(
@@ -88,11 +88,15 @@ class AMLResnet50_V1(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
-    def __freeze_layers(self):
+    def freeze_base(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
 
+    def unfreeze_base(self):
+        # Compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
 
     def forward(self, x):
         x = self.net(x)
@@ -160,7 +164,7 @@ class AMLResnet50_fastAI(nn.Module):
         # Freeze layers
 
         self.transforms = transforms.Compose([
-            transforms.Resize(256),
+            transforms.Resize(232),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(
