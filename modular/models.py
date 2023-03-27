@@ -19,7 +19,7 @@ class AMLResnet50_V0(nn.Module):
         self.net.fc = nn.Identity()
 
         # Freeze layers
-        self.__freeze_layers()
+        self.freeze_base()
 
         # Declare the fully connected layer
         self.fc = nn.Sequential(
@@ -37,7 +37,7 @@ class AMLResnet50_V0(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
-    def _freeze_layers(self):
+    def freeze_base(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
@@ -131,7 +131,7 @@ class AMLResnet50_fastAI(nn.Module):
 
         # New weights with accuracy 80.858%
         self.net = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
-        self.__freeze_layers()
+        self.freeze_base()
 
         # Take the input of the fully connected layer of effnet
         in_dim = self.net.fc.in_features
@@ -173,7 +173,7 @@ class AMLResnet50_fastAI(nn.Module):
         ])
 
 
-    def __freeze_layers(self):
+    def freeze_base(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
@@ -215,7 +215,7 @@ class AMLResnet101_V0(nn.Module):
         )
 
         self.transforms = transforms.Compose([
-            transforms.Resize(256),
+            transforms.Resize(232),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(
