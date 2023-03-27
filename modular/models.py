@@ -104,10 +104,20 @@ class AdaptiveConcatPool2d(nn.Module):
     def __init__(self, sz=None):
         super().__init__()
         sz = sz or (1,1)
+
         self.ap = nn.AdaptiveAvgPool2d(sz)
         self.mp = nn.AdaptiveMaxPool2d(sz)
     def forward(self, x):
-        return torch.cat([self.mp(x), self.ap(x)], 1)
+        # x = torch.reshape(input=x, shape=(32, 2048, 8, 8))
+        #print(x.shape)
+        #x = self.ap(x)
+        #print(x.shape)
+        #x = self.mp(x)
+        #print(x.shape)
+        #return x
+        x = torch.cat([self.mp(x), self.ap(x)], 1)
+        #print(x.shape)
+        return x
 
 class AMLResnet50_fastAI(nn.Module):
 
@@ -117,26 +127,26 @@ class AMLResnet50_fastAI(nn.Module):
 
         # New weights with accuracy 80.858%
         self.net = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+        self.__freeze_layers()
 
         # Take the input of the fully connected layer of effnet
         in_dim = self.net.fc.in_features
 
         # Disable efficient net b7 classifier
-        self.net.fc = nn.Identity()
-        self.net.avgpool = nn.Identity()
-
-        self.fc = nn.Sequential(
-            nn.AdaptiveMaxPool2d((1,1)),
-            nn.AdaptiveAvgPool2d((1,1)),
+        fc = nn.Sequential(
             nn.Flatten(),
-            nn.BatchNorm1d(2048),
+            nn.BatchNorm1d(4096),
             nn.Dropout(0.5),
-            nn.Linear(2048,512),
+            nn.Linear(4096,512),
             nn.ReLU(),
             nn.BatchNorm1d(512),
             nn.Dropout(0.5),
-            nn.Linear(512,10),
+            nn.Linear(512,out_dim),
         )
+
+        self.net.fc = fc
+        self.net.avgpool = AdaptiveConcatPool2d(1)
+
 
         # Disable efficient net b7 classifier
         #self.net.fc = nn.Identity()
@@ -148,7 +158,6 @@ class AMLResnet50_fastAI(nn.Module):
         # self.dropouts = nn.ModuleList([nn.Dropout(0.5) for _ in range(5)])
 
         # Freeze layers
-        self.__freeze_layers()
 
         self.transforms = transforms.Compose([
             transforms.Resize(256),
@@ -167,9 +176,7 @@ class AMLResnet50_fastAI(nn.Module):
 
 
     def forward(self, x):
-
+        #print('forward', x.shape)
         x = self.net(x)
-
-        x = self.fc(x)
-
+        #print('forward', x.shape)
         return x
