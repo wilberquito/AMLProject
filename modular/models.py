@@ -123,10 +123,12 @@ class AMLResnet50_fastAI(nn.Module):
 
         # Disable efficient net b7 classifier
         self.net.fc = nn.Identity()
+        self.net.avgpool = nn.Identity()
 
         self.fc = nn.Sequential(
-            #AdaptiveConcatPool2d((32, 4096)),
-            #nn.Flatten(),
+            nn.AdaptiveMaxPool2d((1,1)),
+            nn.AdaptiveAvgPool2d((1,1)),
+            nn.Flatten(),
             nn.BatchNorm1d(2048),
             nn.Dropout(0.5),
             nn.Linear(2048,512),
@@ -146,7 +148,7 @@ class AMLResnet50_fastAI(nn.Module):
         # self.dropouts = nn.ModuleList([nn.Dropout(0.5) for _ in range(5)])
 
         # Freeze layers
-        self.freeze()
+        self.__freeze_layers()
 
         self.transforms = transforms.Compose([
             transforms.Resize(256),
@@ -157,7 +159,8 @@ class AMLResnet50_fastAI(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
-    def freeze(self):
+
+    def __freeze_layers(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = False
