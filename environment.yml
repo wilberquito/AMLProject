@@ -14,5 +14,6 @@ dependencies:
     - numpy
     - torch
     - torchvision
+    - cuda-python
     - jupyterlab
     - prettytable==3.5.0
