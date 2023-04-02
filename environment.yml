@@ -2,18 +2,20 @@ name: aml-project
 channels:
   - defaults
   - conda-forge
+  - pytorch
+  - nvidia
 dependencies:
   - python=3.9
   - matplotlib
   - tqdm
   - pathlib
   - torchinfo
+  - pytorch==1.13.1 
+  - torchvision==0.14.1
+  - pytorch-cuda=11.6
   - pip
   - pip:
     - pandas
     - numpy
-    - torch
-    - torchvision
-    - cuda-python
     - jupyterlab
     - prettytable==3.5.0
