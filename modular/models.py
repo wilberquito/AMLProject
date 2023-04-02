@@ -88,7 +88,9 @@ class AdaptiveConcatPool2d(nn.Module):
 
 class AMLResnet50_FastAI(nn.Module):
 
-    """We emulate the FASTAI Resnet 50"""
+    """
+    We emulate the FASTAI Resnet 50
+    """
 
     def __init__(self, out_dim:int):
 
@@ -142,7 +144,10 @@ class AMLResnet50_FastAI(nn.Module):
 
 
 class AMLResnet101(nn.Module):
-    """Base on Resnet101"""
+    """
+    Base on Resnet101
+    url: https://pytorch.org/vision/stable/models/generated/torchvision.models.resnet101.html#torchvision.models.ResNet101_Weights
+    """
 
     def __init__(self, out_dim:int):
 
