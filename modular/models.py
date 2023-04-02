@@ -184,6 +184,7 @@ class AMLResnet101(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
+
     def freeze_base(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
