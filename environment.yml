@@ -15,4 +15,4 @@ dependencies:
     - torch
     - torchvision
     - jupyterlab
-
+    - preattytable=3.6.0
