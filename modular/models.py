@@ -234,6 +234,11 @@ class AMLEfficientNetB6(nn.Module):
                 std=[0.229, 0.224, 0.225])
         ])
 
+    def forward(self, x):
+        x = self.net(x)
+        x = self.classifier(x)
+        return x
+
     def freeze_base(self):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
