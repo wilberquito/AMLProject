@@ -222,13 +222,13 @@ class AMLEfficientNetB4(nn.Module):
         # Freeze layers
         self.freeze_base()
 
-        self.classifier = nn.Sequential(nn.Dropout(p=0.5, inplace=True),
+        self.classifier = nn.Sequential(nn.Dropout(p=0.4, inplace=True),
                                         nn.Linear(in_features=in_dim, out_features=out_dim))
 
 
         self.transforms = transforms.Compose([
-            transforms.Resize(528),
-            transforms.CenterCrop(528),
+            transforms.Resize(384),
+            transforms.CenterCrop(380),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
