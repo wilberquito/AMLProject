@@ -203,45 +203,45 @@ class AMLResnet101(nn.Module):
         return x
 
 
-# class AMLEfficientNetB6(nn.Module):
-#     """Base on efficientnet_b6"""
-#
-#     def __init__(self, out_dim: int):
-#
-#         super().__init__()
-#
-#         self.net = efficientnet_b6(weights=EfficientNet_B6_Weights.IMAGENET1K_V1)
-#
-#         # Take the input of the fully connected layer of effnet
-#         in_dim = self.net.fc.in_features
-#
-#         # Noop operation
-#         self.net.fc = nn.Identity()
-#
-#         # Freeze layers
-#         self.freeze_base()
-#
-#         # Disable efficient net b7 classifier
-#         self.fc = nn.Sequential(
-#             nn.Flatten(),
-#             nn.BatchNorm1d(in_dim),
-#             nn.Dropout(0.5),
-#             nn.Linear(in_dim,512),
-#             nn.ReLU(),
-#             nn.BatchNorm1d(512),
-#             nn.Dropout(0.5),
-#             nn.Linear(512,out_dim),
-#         )
-#
-#         self.transforms = transforms.Compose([
-#             transforms.Resize(232),
-#             transforms.CenterCrop(224),
-#             transforms.ToTensor(),
-#             transforms.Normalize(
-#                 mean=[0.485, 0.456, 0.406],
-#                 std=[0.229, 0.224, 0.225])
-#         ])
-#
+class AMLEfficientNetB6(nn.Module):
+    """Base on efficientnet_b6"""
+
+    def __init__(self, out_dim: int):
+
+        super().__init__()
+
+        self.net = efficientnet_b6(weights=EfficientNet_B6_Weights.IMAGENET1K_V1)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.fc.in_features
+
+        # Noop operation
+        self.net.fc = nn.Identity()
+
+        # Freeze layers
+        self.freeze_base()
+
+        # Disable efficient net b7 classifier
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.BatchNorm1d(in_dim),
+            nn.Dropout(0.5),
+            nn.Linear(in_dim,512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(0.5),
+            nn.Linear(512,out_dim),
+        )
+
+        self.transforms = transforms.Compose([
+            transforms.Resize(232),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225])
+        ])
+
 #
 # class AMLEfficientNetB7(nn.Module):
 #     """Base on efficientnet_b7"""
