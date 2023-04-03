@@ -1,7 +1,8 @@
 from torchvision.models import (resnet50, ResNet50_Weights,
                                 resnet101, ResNet101_Weights,
-                                efficientnet_b7, EfficientNet_B7_Weights,
-                                efficientnet_b6, EfficientNet_B6_Weights)
+                                efficientnet_b4, EfficientNet_B4_Weights,
+                                efficientnet_b6, EfficientNet_B6_Weights,
+                                efficientnet_b7, EfficientNet_B7_Weights)
 
 import torchvision.transforms as transforms
 import torch as torch
@@ -201,6 +202,54 @@ class AMLResnet101(nn.Module):
         x = self.net(x)
         x = self.fc(x)
         return x
+
+
+class AMLEfficientNetB4(nn.Module):
+    """Base on efficientnet_b4"""
+
+    def __init__(self, out_dim: int):
+
+        super().__init__()
+
+        self.net = efficientnet_b4(weights=EfficientNet_B4_Weights.IMAGENET1K_V1)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.classifier[1].in_features
+
+        # Noop operation
+        self.net.classifier = nn.Identity()
+
+        # Freeze layers
+        self.freeze_base()
+
+        self.classifier = nn.Sequential(nn.Dropout(p=0.5, inplace=True),
+                                        nn.Linear(in_features=in_dim, out_features=out_dim))
+
+
+        self.transforms = transforms.Compose([
+            transforms.Resize(528),
+            transforms.CenterCrop(528),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225])
+        ])
+
+    def forward(self, x):
+        x = self.net(x)
+        x = self.classifier(x)
+        return x
+
+    def freeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = False
+
+
+    def unfreeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
 
 
 class AMLEfficientNetB6(nn.Module):
