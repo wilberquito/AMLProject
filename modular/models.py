@@ -1,8 +1,9 @@
 from torchvision.models import (resnet50, ResNet50_Weights,
                                 resnet101, ResNet101_Weights,
                                 efficientnet_b4, EfficientNet_B4_Weights,
-                                efficientnet_b6, EfficientNet_B6_Weights,
-                                efficientnet_b7, EfficientNet_B7_Weights)
+                                efficientnet_v2_s, EfficientNet_V2_S_Weights)
+
+
 
 import torchvision.transforms as transforms
 import torch as torch
@@ -252,14 +253,16 @@ class AMLEfficientNetB4(nn.Module):
             param.requires_grad = True
 
 
-class AMLEfficientNetB6(nn.Module):
-    """Base on efficientnet_b6"""
+class AMLEfficientNet_V2_S(nn.Module):
+    """
+    Base model: https://pytorch.org/vision/master/models/generated/torchvision.models.efficientnet_v2_s.html#torchvision.models.EfficientNet_V2_S_Weights
+    """
 
     def __init__(self, out_dim: int):
 
         super().__init__()
 
-        self.net = efficientnet_b6(weights=EfficientNet_B6_Weights.IMAGENET1K_V1)
+        self.net = efficientnet_v2_s(weights=EfficientNet_V2_S_Weights)
 
         # Take the input of the fully connected layer of effnet
         in_dim = self.net.classifier[1].in_features
@@ -270,18 +273,11 @@ class AMLEfficientNetB6(nn.Module):
         # Freeze layers
         self.freeze_base()
 
-        self.classifier = nn.Sequential(nn.Dropout(p=0.5, inplace=True),
+        self.classifier = nn.Sequential(nn.Dropout(p=0.2, inplace=True),
                                         nn.Linear(in_features=in_dim, out_features=out_dim))
 
 
-        self.transforms = transforms.Compose([
-            transforms.Resize(528),
-            transforms.CenterCrop(528),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225])
-        ])
+        self.transforms = EfficientNet_V2_S_Weights.IMAGENET1K_V1.transforms()
 
     def forward(self, x):
         x = self.net(x)
@@ -298,43 +294,3 @@ class AMLEfficientNetB6(nn.Module):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = True
-
-#
-# class AMLEfficientNetB7(nn.Module):
-#     """Base on efficientnet_b7"""
-#
-#     def __init__(self, out_dim: int):
-#
-#         super().__init__()
-#
-#         self.net = efficientnet_b7(weights=EfficientNet_B7_Weights.IMAGENET1K_V1)
-#
-#         # Take the input of the fully connected layer of effnet
-#         in_dim = self.net.fc.in_features
-#
-#         # Noop operation
-#         self.net.fc = nn.Identity()
-#
-#         # Freeze layers
-#         self.freeze_base()
-#
-#         # Disable efficient net b7 classifier
-#         self.fc = nn.Sequential(
-#             nn.Flatten(),
-#             nn.BatchNorm1d(in_dim),
-#             nn.Dropout(0.5),
-#             nn.Linear(in_dim,512),
-#             nn.ReLU(),
-#             nn.BatchNorm1d(512),
-#             nn.Dropout(0.5),
-#             nn.Linear(512,out_dim),
-#         )
-#
-#         self.transforms = transforms.Compose([
-#             transforms.Resize(232),
-#             transforms.CenterCrop(224),
-#             transforms.ToTensor(),
-#             transforms.Normalize(
-#                 mean=[0.485, 0.456, 0.406],
-#                 std=[0.229, 0.224, 0.225])
-#         ])
