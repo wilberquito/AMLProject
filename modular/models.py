@@ -1,7 +1,8 @@
 from torchvision.models import (resnet50, ResNet50_Weights,
                                 resnet101, ResNet101_Weights,
                                 efficientnet_b4, EfficientNet_B4_Weights,
-                                efficientnet_v2_s, EfficientNet_V2_S_Weights)
+                                efficientnet_v2_s, EfficientNet_V2_S_Weights,
+                                maxvit_t, MaxVit_T_Weights)
 
 
 
@@ -255,7 +256,8 @@ class AMLEfficientNetB4(nn.Module):
 
 class AMLEfficientNet_V2_S(nn.Module):
     """
-    Base model: https://pytorch.org/vision/master/models/generated/torchvision.models.efficientnet_v2_s.html#torchvision.models.EfficientNet_V2_S_Weights
+    Base model:
+    https://pytorch.org/vision/master/models/generated/torchvision.models.efficientnet_v2_s.html#torchvision.models.EfficientNet_V2_S_Weights
     """
 
     def __init__(self, out_dim: int):
@@ -278,6 +280,55 @@ class AMLEfficientNet_V2_S(nn.Module):
 
 
         self.transforms = EfficientNet_V2_S_Weights.IMAGENET1K_V1.transforms()
+
+    def forward(self, x):
+        x = self.net(x)
+        x = self.classifier(x)
+        return x
+
+    def freeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = False
+
+
+    def unfreeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
+
+
+class AMLMAXVIT_T(nn.Module):
+    """
+    Base model:
+    https://pytorch.org/vision/stable/models/generated/torchvision.models.maxvit_t.html#torchvision.models.MaxVit_T_Weights
+    """
+
+    def __init__(self, out_dim: int):
+
+        super().__init__()
+
+        self.net = maxvit_t(weights=MaxVit_T_Weights)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.classifier[-1].in_features
+
+        # Noop operation
+        self.net.classifier = nn.Identity()
+
+        # Freeze layers
+        self.freeze_base()
+
+        self.classifier = nn.Sequential(
+            nn.AdaptiveAvgPool2d(output_size=1),
+            nn.Flatten(start_dim=1, end_dim=-1),
+            nn.LayerNorm(normalized_shape=[in_dim]),
+            nn.Linear(in_features=in_dim, out_features=in_dim),
+            nn.Tanh(),
+            nn.Linear(in_features=in_dim, out_features=out_dim)
+        )
+
+        self.transforms = MaxVit_T_Weights.IMAGENET1K_V1.transforms()
 
     def forward(self, x):
         x = self.net(x)
