@@ -313,6 +313,8 @@ class AMLMAXVIT_T(nn.Module):
         # Take the input of the fully connected layer of effnet
         in_dim = self.net.classifier[-1].in_features
 
+        print(in_dim)
+
         # Noop operation
         self.net.classifier = nn.Identity()
 
@@ -331,7 +333,9 @@ class AMLMAXVIT_T(nn.Module):
         self.transforms = MaxVit_T_Weights.IMAGENET1K_V1.transforms()
 
     def forward(self, x):
+        print(x.shape)
         x = self.net(x)
+        print(x.shape)
         x = self.classifier(x)
         return x
 
