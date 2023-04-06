@@ -144,6 +144,7 @@ def pred_and_plot_image(
     plt.title(title)
     plt.axis(False)
 
+
 def set_seeds(seed: int=42):
     """Sets random sets for torch operations.
 
