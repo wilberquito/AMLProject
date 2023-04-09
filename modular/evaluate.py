@@ -1,9 +1,12 @@
-import numpy as np
+"""
+Script to evaluate a model
+"""
+
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
 
-def get_trans(img: torch.Tensor, trans):
+
+def get_transpose(img: torch.Tensor, trans):
     if trans >= 4:
         img = img.transpose(2, 3)
     if trans % 4 == 0:
@@ -26,7 +29,6 @@ def val_step(model: nn.Module,
 
     model.eval()
 
-    val_loss = []
     LOGITS = []
     PROBS = []
     TARGETS = []
@@ -37,10 +39,11 @@ def val_step(model: nn.Module,
         logits = torch.zeros((inputs.shape[0], out_dim)).to(device)
         probs = torch.zeros((inputs.shape[0], out_dim)).to(device)
 
+        # Multiple test
         for test in range(n_test):
-            test_logits = model(get_trans(inputs, test))
+            test_logits = model(get_transpose(inputs, test))
             logits += test_logits
-            probs += test_logits.softmax(1)
+            probs += torch.softmax(test_logits, dim=1)
 
         logits /= n_test
         probs /= n_test
@@ -48,11 +51,6 @@ def val_step(model: nn.Module,
         LOGITS.append(logits.detach().cpu())
         PROBS.append(probs.detach().cpu())
         TARGETS.append(labels.detach().cpu())
-
-        loss = criterion(logits, labels)
-        val_loss.append(loss.detach().cpu().numpy())
-
-    val_loss = np.mean(val_loss)
 
     LOGITS = torch.cat(LOGITS).numpy()
     PROBS = torch.cat(PROBS).numpy()
