@@ -23,7 +23,7 @@ class TestDataset(Dataset):
     into PIL format and returns them
     """
 
-    def __init__(self, root, transform):
+    def __init__(self, root, transform=None):
         self.root = root
         self.file_names = sorted(os.listdir(root))
         self.transform = transform
