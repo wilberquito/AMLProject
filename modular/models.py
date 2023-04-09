@@ -3,9 +3,6 @@ from torchvision.models import (resnet50, ResNet50_Weights,
                                 efficientnet_b4, EfficientNet_B4_Weights,
                                 efficientnet_v2_s, EfficientNet_V2_S_Weights,
                                 maxvit_t, MaxVit_T_Weights)
-
-
-
 import torchvision.transforms as transforms
 import torch as torch
 import torch.nn as nn

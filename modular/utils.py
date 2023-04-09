@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset
 from pathlib import Path
+from typing import List
+import torchvision
 
 
 # Calculate accuracy (a classification metric)
@@ -74,10 +76,6 @@ def plot_loss_curves(results):
     plt.legend()
 
 
-from typing import List
-import torchvision
-
-
 def pred_and_plot_image(
     model: torch.nn.Module,
     image_path: str,
@@ -145,7 +143,7 @@ def pred_and_plot_image(
     plt.axis(False)
 
 
-def set_seeds(seed: int=42):
+def set_seeds(seed: int = 42):
     """Sets random sets for torch operations.
 
     Args:
@@ -167,11 +165,11 @@ def show_grid_preview(dataset: Dataset):
     for i in range(1, rows * cols + 1):
         random_idx = torch.randint(0, len(dataset), size=[1]).item()
         img, label = dataset[random_idx]
-        img = img.permute(1,2,0)
+        img = img.permute(1, 2, 0)
         fig.add_subplot(rows, cols, i)
         plt.imshow(img.squeeze(), cmap="gray")
         plt.title(class_names[label])
-        plt.axis(False);
+        plt.axis(False)
 
 
 def save_model(data_dict: dict, save_as: Path):

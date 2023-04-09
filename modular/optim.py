@@ -1,8 +1,12 @@
 import torch
 
+
 # reference (https://gist.github.com/wassname/c15a2b72df716f2fa1299661c1414e6b)
 class AdamStepLR(torch.optim.Adam):
-    """Combine Adam and lr_scheduler.StepLR so we can use it as a normal optimiser"""
+    """
+    Combine Adam and lr_scheduler.StepLR so we can use it as a normal optimiser
+    """
+
     def __init__(self,
                  params,
                  lr=0.001,

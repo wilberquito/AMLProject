@@ -222,16 +222,16 @@ def train(model: torch.nn.Module,
 
             # Save network checkpoint
             if is_save_required:
-              data_dict = {
-                'train_loss': results["train_loss"],
-                'train_acc': results["train_acc"],
-                'test_loss': results["test_loss"],
-                'test_acc': results["test_acc"],
-                'epoch': epoch,
-                'optimizer': optimizer.state_dict(),
-                'model': model.state_dict()
-              }
-              save_model(data_dict, cast(Path, save_as))
+                data_dict = {
+                    'train_loss': results["train_loss"],
+                    'train_acc': results["train_acc"],
+                    'test_loss': results["test_loss"],
+                    'test_acc': results["test_acc"],
+                    'epoch': epoch,
+                    'optimizer': optimizer.state_dict(),
+                    'model': model.state_dict()
+                }
+                save_model(data_dict, cast(Path, save_as))
         else:
             early_stop_count += 1
             if early_stop_count >= patience:
