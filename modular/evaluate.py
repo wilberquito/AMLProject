@@ -21,7 +21,7 @@ def get_transpose(img: torch.Tensor, trans):
 
 @torch.inference_mode()
 def val_step(model: nn.Module,
-             loader: DataLoader,
+             loader: torch.utils.data.DataLoader,
              criterion: nn.Module,
              device: torch.device,
              out_dim: int,
