@@ -31,11 +31,11 @@ def val_step(model: nn.Module,
 
     LOGITS = []
     PROBS = []
-    TARGETS = []
+    LABELS = []
 
-    for batch, (inputs, labels) in tqdm(enumerate(loader)):
+    for inputs in tqdm(loader):
 
-        inputs, labels = inputs.to(device), labels.to(device)
+        inputs = inputs.to(device)
         logits = torch.zeros((inputs.shape[0], out_dim)).to(device)
         probs = torch.zeros((inputs.shape[0], out_dim)).to(device)
 
@@ -47,13 +47,16 @@ def val_step(model: nn.Module,
 
         logits /= n_test
         probs /= n_test
+        labels = torch.argmax(probs, dim=1)
+
+
 
         LOGITS.append(logits.detach().cpu())
         PROBS.append(probs.detach().cpu())
-        TARGETS.append(labels.detach().cpu())
+        LABELS.append(labels.detach().cpu())
 
     LOGITS = torch.cat(LOGITS).numpy()
     PROBS = torch.cat(PROBS).numpy()
-    TARGETS = torch.cat(TARGETS).numpy()
+    LABELS = torch.cat(LABELS).numpy()
 
-    return LOGITS, PROBS, TARGETS
+    return LOGITS, PROBS, LABELS
