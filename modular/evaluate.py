@@ -49,8 +49,6 @@ def val_step(model: nn.Module,
         probs /= n_test
         labels = torch.argmax(probs, dim=1)
 
-
-
         LOGITS.append(logits.detach().cpu())
         PROBS.append(probs.detach().cpu())
         LABELS.append(labels.detach().cpu())
