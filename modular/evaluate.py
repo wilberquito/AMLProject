@@ -8,6 +8,10 @@ from tqdm import tqdm
 
 
 def get_transpose(img: torch.Tensor, trans):
+    """
+    This function is thought to make some transformations
+    in the image, kindof an assemble.
+    """
     if trans >= 4:
         img = img.transpose(2, 3)
     if trans % 4 == 0:
@@ -26,6 +30,10 @@ def val_step(model: nn.Module,
              device: torch.device,
              out_dim: int,
              n_test: int = 1):
+    """
+    This function evaluate a model given a loader.
+    It returns a tuple of logits, probabilities and classes
+    """
 
     model.eval()
 
