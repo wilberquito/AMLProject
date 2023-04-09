@@ -8,7 +8,9 @@ from typing import cast
 def ensemble(parent_dir: str,
              output_name: str):
 
-    subs = [cast(pd.DataFrame,pd.read_csv(csv)) for csv in sorted(glob(os.path.join(parent_dir, '*.csv')))]
+    subs = []
+    for csv in sorted(glob(os.path.join(parent_dir, '*.csv'))):
+        subs.append(cast(pd.DataFrame, pd.read_csv(csv)))
 
     n, _ = subs[0].shape
     n_csv = len(subs)
