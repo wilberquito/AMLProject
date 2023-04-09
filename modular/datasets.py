@@ -23,15 +23,20 @@ class TestDataset(Dataset):
     into PIL format and returns them
     """
 
-    def __init__(self, root_dir):
-        self.root_dir = root_dir
-        self.file_names = sorted(os.listdir(root_dir))
+    def __init__(self, root, transform):
+        self.root = root
+        self.file_names = sorted(os.listdir(root))
+        self.transform = transform
 
     def __len__(self):
         return len(self.file_names)
 
     def __getitem__(self, idx):
         # load the image and label
-        img_path = os.path.join(self.root_dir, self.file_names[idx])
+        img_path = os.path.join(self.root, self.file_names[idx])
         img = Image.open(img_path).convert("RGB")
+
+        if self.transform:
+            img = self.transform(img)
+
         return img
