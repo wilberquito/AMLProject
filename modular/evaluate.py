@@ -4,6 +4,7 @@ Script to evaluate a model
 
 import torch
 import torch.nn as nn
+from tqdm import tqdm
 
 
 def get_transpose(img: torch.Tensor, trans):
