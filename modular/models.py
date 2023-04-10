@@ -2,7 +2,8 @@ from torchvision.models import (resnet50, ResNet50_Weights,
                                 resnet101, ResNet101_Weights,
                                 efficientnet_b4, EfficientNet_B4_Weights,
                                 efficientnet_v2_s, EfficientNet_V2_S_Weights,
-                                maxvit_t, MaxVit_T_Weights)
+                                maxvit_t, MaxVit_T_Weights,
+                                resnext50_32x4d, ResNeXt50_32X4D_Weights)
 import torchvision.transforms as transforms
 import torch as torch
 import torch.nn as nn
@@ -342,3 +343,52 @@ class AMLMAXVIT_T(nn.Module):
         # Don't compute the gradients for net feature
         for _, param in self.net.named_parameters():
             param.requires_grad = True
+
+
+class AMLResnet_50W(nn.Module):
+    """
+    Base model:
+    https://pytorch.org/vision/master/models/generated/torchvision.models.resnext50_32x4d.html#torchvision.models.ResNeXt50_32X4D_Weights
+    """
+
+    def __init__(self, out_dim: int):
+
+        super().__init__()
+
+        self.net = resnext50_32x4d(weights=ResNeXt50_32X4D_Weights)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.fc.in_features
+
+        # Noop operation
+        self.net.fc = nn.Identity()
+
+        self.freeze_base()
+
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.BatchNorm1d(in_dim),
+            nn.Dropout(0.5),
+            nn.Linear(in_dim,512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(0.5),
+            nn.Linear(512,out_dim),
+        )
+
+        self.transforms = ResNeXt50_32X4D_Weights.IMAGENET1K_V1.transforms()
+
+    def freeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = False
+
+    def unfreeze_base(self):
+        # Compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
+
+    def forward(self, x):
+        x = self.net(x)
+        x = self.fc(x)
+        return x
