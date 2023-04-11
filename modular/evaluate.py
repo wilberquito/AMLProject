@@ -1,5 +1,7 @@
 """
-Script to evaluate a model
+This script is thought to evaluate models.
+It allows you to ensemble the predictions with
+n number of test thanks to `get_transpose` fun.
 """
 
 import torch
