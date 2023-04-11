@@ -58,7 +58,7 @@ def ensemble(parent_dir: str,
     if with_probs:
         df = pd.DataFrame(probs)
         df.index = names
-        df.to_csv('probs. ' + output_name, index=True)
+        df.to_csv('probs.' + output_name, index=True)
 
 
 if __name__ == '__main__':
