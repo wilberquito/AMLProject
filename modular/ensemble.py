@@ -14,7 +14,8 @@ import numpy as np
 
 
 def ensemble(parent_dir: str,
-             output_name: str):
+             output_name: str,
+             with_props=False):
     """
     Ensemble fun, all predictions are weighted the same
     """
@@ -34,13 +35,16 @@ def ensemble(parent_dir: str,
     names = list(all_csv[0].index)
     # Here I save the labels predicted by the ensemble
     labels = []
+    # All probs
+    probs = []
 
     # Per each sample, I compute the average weighted,
     # of the different predictions
     for i in range(n):
         all_preds = [csv.iloc[i].values * wts[j] for j, csv in enumerate(all_csv)]
-        logits = np.sum(all_preds, axis=0)
-        labels.append(np.argmax(logits, axis=0))
+        prob = np.sum(all_preds, axis=0)
+        labels.append(np.argmax(prob, axis=0))
+        probs.append(prob)
 
     df = pd.DataFrame({
         'name': names,
@@ -50,6 +54,11 @@ def ensemble(parent_dir: str,
                    ascending=True,
                    inplace=True)
     df.to_csv(output_name, index=False)
+
+    if with_props:
+        df = pd.DataFrame(probs)
+        df.index = names
+        df.to_csv('probs. ' + output_name, index=True)
 
 
 if __name__ == '__main__':
