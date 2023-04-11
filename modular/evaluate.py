@@ -43,7 +43,7 @@ def val_step(model: nn.Module,
     PROBS = []
     LABELS = []
 
-    for inputs in tqdm(loader):
+    for inputs, _ in tqdm(loader):
 
         inputs = inputs.to(device)
         logits = torch.zeros((inputs.shape[0], out_dim)).to(device)
