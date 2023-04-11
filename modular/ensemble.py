@@ -15,7 +15,7 @@ import numpy as np
 
 def ensemble(parent_dir: str,
              output_name: str,
-             with_props=False):
+             with_probs=False):
     """
     Ensemble fun, all predictions are weighted the same
     """
@@ -55,7 +55,7 @@ def ensemble(parent_dir: str,
                    inplace=True)
     df.to_csv(output_name, index=False)
 
-    if with_props:
+    if with_probs:
         df = pd.DataFrame(probs)
         df.index = names
         df.to_csv('probs. ' + output_name, index=True)
