@@ -10,11 +10,11 @@ from tqdm.auto import tqdm
 from .utils import save_model
 
 
-def train_step(model: torch.nn.Module,
-               dataloader: torch.utils.data.DataLoader,
+def train_step(model: torch.nn.Module, dataloader: torch.utils.data.DataLoader,
                criterion: torch.nn.Module,
                optimizer: torch.optim.Optimizer,
-               device: torch.device) -> Tuple[float, float]:
+               device: torch.device,
+               scheduler: torch.optim.lr_scheduler._LRScheduler = None) -> Tuple[float, float]:
     """Trains a PyTorch model for a single epoch.
 
     Turns a target PyTorch model to training mode and then
@@ -61,13 +61,18 @@ def train_step(model: torch.nn.Module,
         # 5. Optimizer step
         optimizer.step()
 
-        # 6. Calculate and accumulate accuracy metric across all batches
+        # 6. Update the lr base on the predefined scheduler
+        if scheduler:
+            scheduler.step()
+
+        # 7. Calculate and accumulate accuracy metric across all batches
         preds = torch.argmax(outputs, dim=1)
         train_acc += torch.sum(preds == labels).item()
 
     train_loss = train_loss / len(dataloader.dataset)
     train_acc = train_acc / len(dataloader.dataset)
     return train_loss, train_acc
+
 
 def test_step(model: torch.nn.Module,
               dataloader: torch.utils.data.DataLoader,
@@ -128,7 +133,7 @@ def train(model: torch.nn.Module,
           epochs: int,
           device: torch.device,
           patience: int = 5,
-          scheduler = None,
+          scheduler: torch.optim.lr_scheduler._LRScheduler = None,
           save_as: Optional[Path] = None) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
@@ -163,10 +168,11 @@ def train(model: torch.nn.Module,
     """
 
     # Create empty results dictionary
-    results = {"train_loss": [],
-               "train_acc": [],
-               "test_loss": [],
-               "test_acc": []
+    results = {
+        "train_loss": [],
+        "train_acc": [],
+        "test_loss": [],
+        "test_acc": []
     }
 
     # Makes sure model on target device
@@ -187,16 +193,13 @@ def train(model: torch.nn.Module,
                                            dataloader=train_dataloader,
                                            criterion=criterion,
                                            optimizer=optimizer,
-                                           device=device)
+                                           device=device,
+                                           scheduler=scheduler)
 
         test_loss, test_acc = test_step(model=model,
                                         dataloader=test_dataloader,
                                         criterion=criterion,
                                         device=device)
-
-        # Step the learning rate scheduler
-        if scheduler:
-            scheduler.step()
 
         # Print out what's happening
         print(
