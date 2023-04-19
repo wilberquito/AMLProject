@@ -39,4 +39,4 @@ class TestDataset(Dataset):
         if self.transform:
             img = self.transform(img)
 
-        return img, None
+        return img, -1
