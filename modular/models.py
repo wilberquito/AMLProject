@@ -1,4 +1,5 @@
-from torchvision.models import (resnet50, ResNet50_Weights,
+from torchvision.models import (resnet34, ResNet34_Weights,
+                                resnet50, ResNet50_Weights,
                                 resnet101, ResNet101_Weights,
                                 efficientnet_b4, EfficientNet_B4_Weights,
                                 efficientnet_v2_s, EfficientNet_V2_S_Weights,
@@ -137,6 +138,12 @@ class AMLResnet50_FastAI(nn.Module):
             param.requires_grad = False
 
 
+    def unfreeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
+
+
     def forward(self, x):
         #print('forward', x.shape)
         x = self.net(x)
@@ -203,6 +210,64 @@ class AMLResnet101(nn.Module):
         x = self.fc(x)
         return x
 
+class AMLResnet34(nn.Module):
+    """
+    Base on Resnet34
+    https://pytorch.org/vision/main/models/generated/torchvision.models.resnet34.html
+    """
+
+    def __init__(self, out_dim:int):
+
+        super().__init__()
+
+        self.net = resnet34(weights=ResNet34_Weights.IMAGENET1K_V1)
+
+        # Take the input of the fully connected layer of effnet
+        in_dim = self.net.fc.in_features
+
+        # Noop operation
+        self.net.fc = nn.Identity()
+
+        self.freeze_base()
+
+        # Disable efficient net b7 classifier
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.BatchNorm1d(in_dim),
+            nn.Dropout(0.5),
+            nn.Linear(in_dim,512),
+            nn.ReLU(),
+            nn.BatchNorm1d(512),
+            nn.Dropout(0.5),
+            nn.Linear(512,out_dim),
+        )
+
+        self.transforms = transforms.Compose([
+            transforms.Resize(232),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225])
+        ])
+
+
+    def freeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = False
+
+
+    def unfreeze_base(self):
+        # Don't compute the gradients for net feature
+        for _, param in self.net.named_parameters():
+            param.requires_grad = True
+
+
+    def forward(self, x):
+        x = self.net(x)
+        x = self.fc(x)
+        return x
 
 class AMLEfficientNetB4(nn.Module):
     """Base on efficientnet_b4"""
@@ -345,7 +410,7 @@ class AMLMAXVIT_T(nn.Module):
             param.requires_grad = True
 
 
-class AMLResnet_50W(nn.Module):
+class AMLResnext_50W(nn.Module):
     """
     Base model:
     https://pytorch.org/vision/master/models/generated/torchvision.models.resnext50_32x4d.html#torchvision.models.ResNeXt50_32X4D_Weights
